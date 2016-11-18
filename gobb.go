@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -14,13 +15,15 @@ const IP = "10.0.0.10"
 const Port = "8022"
 
 func main() {
+	flag.Parse()
+	args := flag.Args()
 	//fmt.Println("os.Args:", os.Args)
-	if len(os.Args) < 3 {
-		fmt.Println("need at least 2 arguments (eg. gobb install package)")
+	if len(args) < 2 {
+		fmt.Println("need at least 2 arguments (eg. goarm install package)")
 		return
 	}
-	if os.Args[1] == "install" {
-		cmd := exec.Command("env", "GOOS=linux", "GOARCH=arm", "GOARM=7", "go", "install", os.Args[2])
+	if args[0] == "install" {
+		cmd := exec.Command("env", "GOOS=linux", "GOARCH=arm", "GOARM=7", "go", "install", args[1])
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
@@ -29,7 +32,7 @@ func main() {
 			return
 		}
 		fmt.Print("built... ")
-		argparts := strings.Split(os.Args[2], "/")
+		argparts := strings.Split(args[1], "/")
 		lastElement := argparts[len(argparts)-1]
 		cmd = exec.Command("scp", "-P "+Port, os.ExpandEnv("$GOPATH/bin/linux_arm/")+lastElement,
 			"root@"+IP+":/root/bin/"+lastElement)
@@ -40,8 +43,8 @@ func main() {
 			fmt.Println("scp error:", err)
 			return
 		}
-		fmt.Println("uploaded to BeagleBone")
+		fmt.Println("uploaded to ARM Linux")
 	} else {
-		fmt.Println("Command", os.Args[1])
+		fmt.Println("Command", args[1], "not implemented")
 	}
 }
