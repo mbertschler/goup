@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -79,8 +80,21 @@ func upload(conf UpTarget, pkg string) error {
 	return cmd.Run()
 }
 
+func goToolGopath() string {
+	buf := &bytes.Buffer{}
+	cmd := exec.Command("go", "env", "GOPATH")
+	cmd.Stdout = buf
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return strings.TrimSpace(buf.String())
+}
+
 func findBin(conf UpTarget, name string) string {
 	gopaths := filepath.SplitList(os.Getenv("GOPATH"))
+	gopaths = append(gopaths, goToolGopath())
 	for _, p := range gopaths {
 		var path string
 		if runtime.GOOS == conf.Os && runtime.GOARCH == conf.Arch {
