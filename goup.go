@@ -33,20 +33,29 @@ func main() {
 		log.Fatal(err)
 	}
 	if len(os.Args) < 2 {
-		fmt.Println("need at least 3 arguments (goup [target] [package])")
+		fmt.Println("need at least 2 arguments (goup [target]) or (goup [target] [package])")
 		return
+	}
+	pkg := "."
+	up, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(os.Args) > 2 {
+		pkg = os.Args[2]
+		up = os.Args[2]
 	}
 
 	conf, ok := targets[os.Args[1]]
 	if !ok {
 		fmt.Println("can't find target", os.Args[1], "in config file")
 	}
-	err = build(conf, os.Args[2])
+	err = build(conf, pkg)
 	if err != nil {
 		fmt.Println("go install error:", err)
 		return
 	}
-	err = upload(conf, os.Args[2])
+	err = upload(conf, up)
 	if err != nil {
 		fmt.Println("scp error:", err)
 	}
